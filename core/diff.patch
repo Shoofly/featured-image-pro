@@ -1,0 +1,55 @@
+diff --git a/assets/js/widget.js b/assets/js/widget.js
+index 078f786..cc4b1d2 100644
+--- a/assets/js/widget.js
++++ b/assets/js/widget.js
+@@ -1,16 +1,37 @@
+ jQuery(function($) {
+ 	$('body').on('click', 'a.collapsed', function(e) { //when a collapsed item is clicked
+-            parent = $(this).data('parent');	//parent element
+-            loaded = $(parent).data("loaded");	//loaded determines whether or not event has been attached
++            var parent = $(this).data('parent'),	//parent element
++                $parent = $(parent), // makes loading faster
++                number = $parent.data('widget-number'),
++                shortcode_meta = $parent.data('proto-shortcode-meta'),
++                loaded = $parent.data("loaded");	//loaded determines whether or not event has been attached
++
++                // decode shortcode components and generate shortcode
++                shortcode_meta = decodeURIComponent(shortcode_meta);
++                shortcode_meta = JSON.parse(shortcode_meta);
++                defaults = shortcode_meta.defaults;
++                instance = shortcode_meta.instance;
++
++            /**
++             * Change shortcode settings on input change.
++             */
++            $(parent + ' input, ' + parent + ' select').change(function(e) {
++                var input_name = $(this).attr('name');
++                instance[input_name] = $(this).attr('value');
++            });
++
++            /**
++             * This only happens when necessary, generally on first load or update.
++             */
+             if (loaded != '1') { //if the event is not attached
+                 fsubmit = $(this).closest('form').find(':submit'); //find the submit button
+                 fsubmit.on('click', function( event ) {
+-                        $(parent).data('loaded', '0');			//reset to event not attached
++                        $parent.data('loaded', '0');			//reset to event not attached
+                 });
+                 $($(this).data('parent') + ' .panel').accordion({
+                         heightStyle: "content"
+                 });
+-                $(parent).data('loaded', '1');	//reset to event attached
++                $parent.data('loaded', '1');	//reset to event attached
+                 $(e.target).click(); //send the click event again with attached event
+                 $('.proto-color').wpColorPicker({
+                     'change': function() {
+@@ -26,6 +47,8 @@ jQuery(function($) {
+                         }, 100);
+                     }
+                 });
++
++                proto_snap.generate_shortcode(number, instance, defaults);
+             };
+ 	});
+ });
